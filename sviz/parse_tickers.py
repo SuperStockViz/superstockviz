@@ -7,7 +7,7 @@ import re
 
 # Local Imports
 
-TICKER_REGEX = re.compile(r"[A-Z]+[0-9]*")
+TICKER_REGEX = re.compile(r"[A-Za-z]+[0-9]*")
 
 def parse_tickers(ticker_str:str)->list[str]:
     """Parse a string of tickers into a list
@@ -18,4 +18,4 @@ def parse_tickers(ticker_str:str)->list[str]:
     Returns:
         list[str]: Parsed list of tickers
     """
-    return list(TICKER_REGEX.findall(ticker_str))
+    return [x.upper() for x in TICKER_REGEX.findall(ticker_str)]
