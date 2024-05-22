@@ -63,7 +63,7 @@ def add_dfForm():
     data = pd.DataFrame({'ticker':[],'invest_amount':[],'start_date':[],'end_date':[]})
     st.session_state.data = data
     for row in range(num_rows):
-        r = pd.DataFrame({'ticker':[st.session_state[f"ticker{row}"]],
+        r = pd.DataFrame({'ticker':[st.session_state[f"ticker{row}"].upper()],
                 'invest_amount':[st.session_state[f"invest_amount{row}"]],
                 'start_date':[st.session_state[f"start_date{row}"]],
                 'end_date':[st.session_state[f'end_date{row}']]})
