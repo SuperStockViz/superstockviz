@@ -28,7 +28,7 @@ def backtest(
         ticker = row["ticker"]
         if ticker not in price_df.columns:
             continue
-        ticker_series = price_df.loc[row["start_date"] : row["end_date"], ticker]
+        ticker_series = price_df.loc[(price_df.index>=row["start_date"])&(price_df.index<=row["end_date"]), ticker]
         start_price = ticker_series.iloc[0]
         stock_amount = row["invest_amount"] / start_price
         ticker_series = ticker_series * stock_amount
@@ -36,7 +36,7 @@ def backtest(
         ticker_series.name = ticker
         ticker_gains_list.append(ticker_series)
     total_gains = (
-        pd.concat(ticker_gains_list, axis=1, ignore_index=False)
+        pd.concat(ticker_gains_list, axis=1, ignore_index=False, join="outer").sort_index(axis=0)
         .ffill(axis=0, limit=None, limit_area=None)
         .fillna(value=0.0)
     )
