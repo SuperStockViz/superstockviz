@@ -19,14 +19,21 @@ if 'data' not in st.session_state:
 
 if 'stock_df' not in st.session_state:
     stock_df = pd.read_csv("./data/stockprice.csv", header=[0,1], index_col=0)
+    possible_tickers = stock_df["Close"].columns
     stock_df.index = pd.to_datetime(stock_df.index, format = "%Y-%m-%d").date
+    sp500info_df = pd.read_csv("./data/sp500info.csv", index_col=0)
 
 
 # Show Dataframe (For testing)
-st.dataframe(st.session_state.data)
+# st.dataframe(st.session_state.data)
+
+
 
 # a selection for the user to specify the number of rows
 num_rows = st.slider('Number of Stocks', min_value=1, max_value=10)
+
+# a selection for user to specify if value should be inflation adjusted
+adjust_inflation = st.checkbox("Adjust for Inflation")
 
 # columns to lay out the inputs
 grid = st.columns(4)
@@ -39,7 +46,7 @@ END_DATE = date(2023, 12, 31)
 # Function to create a row of widgets (with row number input to assure unique keys)
 def add_row(row):
     with grid[0]:
-        st.text_input('Ticker', key=f'ticker{row}')
+        st.selectbox('Ticker', possible_tickers, key=f'ticker{row}')
     with grid[1]:
         st.number_input('Amount to Invest', step=100, key=f'invest_amount{row}')
     with grid[2]:
@@ -71,6 +78,9 @@ def add_dfForm():
 
 st.button('Submit', on_click=add_dfForm)
 
+with st.expander("See More Information on Companies"):
+    st.dataframe(sp500info_df.rename({"Symbol":"Ticker"}, axis=1))
+
 
 if len(st.session_state.data) > 0:
     gains_chart = sviz.backtest(stock_choice=st.session_state.data, 
@@ -78,5 +88,6 @@ if len(st.session_state.data) > 0:
                               width=650,
                               upper_height=400, 
                               lower_height=150,
-                              price="Close")
+                              price="Close",
+                              adjust_inflation=adjust_inflation)
     st.altair_chart(gains_chart)

@@ -20,6 +20,8 @@ st.set_page_config(layout="wide")
 # Read in stock data
 stock_df = pd.read_csv("./data/stockprice.csv", header=[0,1], index_col=0)
 sp500info_df = pd.read_csv("./data/sp500info.csv", index_col=0)
+possible_tickers = stock_df["Close"].columns
+
 
 # Process data
 stock_df_list = []
@@ -41,9 +43,9 @@ st.header("Adaptive Stock Viewer")
 
 
 # Input list of tickers, can be seperated in any way
-ticker_str = st.text_input("Enter tickers")
-# Parse tickers
-ticker_list = sviz.parse_tickers(ticker_str=ticker_str)
+ticker_list = st.multiselect("Enter tickers of interest", possible_tickers)
+with st.expander("See More Information on Companies"):
+    st.dataframe(sp500info_df.rename({"Symbol":"Ticker"}, axis=1))
 
 
 if len(ticker_list) == 1 and ticker_list[0]=="SP500":
@@ -105,5 +107,3 @@ annotated_ticker = st.selectbox("Select a Ticker of Interest",[x.split(".")[0] f
 with open(f"./data/news_annotated/{annotated_ticker}.html", 'r') as f:
     annotated_news_chart = f.read()
 components.html(annotated_news_chart, height=800, width=1000)
-    
-
