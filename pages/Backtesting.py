@@ -98,6 +98,6 @@ st.markdown(
     [yfinance](https://pypi.org/project/yfinance/): Used to get stock price data from Yahoo Finanace  
     [CPI](https://palewi.re/docs/cpi/): Inflation adjustment  
     [Wikipedia](https://en.wikipedia.org/wiki/List_of_S%26P_500_companies): Information on SP500 companies  
-    [GNews](https://github.com/ranahaani/GNews): Used to get news stories from Google News
+    [GNews](https://github.com/ranahaani/GNews): Used to get news stories from Google News  
     """
 )

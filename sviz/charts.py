@@ -134,7 +134,20 @@ def candlestick(
         alt.Y2(f"{high_col}:Q"),
     )
 
-    bar = base.mark_bar().encode(alt.Y("Open:Q").scale(zero=False), alt.Y2("Close:Q"))
+    bar = base.mark_bar().encode(
+        alt.Y("Open:Q").scale(zero=False),
+        alt.Y2("Close:Q"),
+        alt.Tooltip(
+            [
+                "Date",
+                "ticker",
+                f"{high_col}",
+                f"{low_col}",
+                f"{open_col}",
+                f"{close_col}",
+            ]
+        ),
+    )
 
     news_point = (
         alt.Chart(stock_data)
@@ -144,7 +157,18 @@ def candlestick(
             .axis(format="%Y-%m-%d")
             .title("Date"),
             alt.Y("median:Q").scale(zero=False),
-            alt.Tooltip(["Date", "ticker", "title", "publisher"]),
+            alt.Tooltip(
+                [
+                    "Date",
+                    "ticker",
+                    "title",
+                    "publisher",
+                    f"{high_col}",
+                    f"{low_col}",
+                    f"{open_col}",
+                    f"{close_col}",
+                ]
+            ),
         )
         .properties(width=width, height=upper_height)
         .transform_filter("datum.title !== null")
@@ -155,7 +179,20 @@ def candlestick(
         alt.Chart(stock_data)
         .mark_line()
         .add_params(time_brush)
-        .encode(alt.X("Date:T"), alt.Y(f"{close_col}", title="Close (USD)"))
+        .encode(
+            alt.X("Date:T"),
+            alt.Y(f"{close_col}", title="Close (USD)"),
+            alt.Tooltip(
+                [
+                    "Date",
+                    "ticker",
+                    f"{high_col}",
+                    f"{low_col}",
+                    f"{open_col}",
+                    f"{close_col}",
+                ]
+            ),
+        )
         .properties(width=width, height=lower_height)
     )
 
@@ -196,6 +233,7 @@ def multiple_company(
         .encode(
             alt.Y(f"{price_col}:Q", title="Price"),
             alt.Color(f"{ticker_col}:N", title="Ticker"),
+            alt.Tooltip([f"{date_col}", f"{ticker_col}", f"{price_col}"]),
         )
     )
 
@@ -211,7 +249,7 @@ def multiple_company(
             .axis(format="%Y-%m-%d")
             .title("Date"),
             alt.Y(f"{price_col}:Q", title="Price"),
-            alt.Tooltip(["Date", "ticker", "title", "publisher"]),
+            alt.Tooltip(["Date", "ticker", "title", "publisher", f"{price_col}"]),
             alt.Color(f"{ticker_col}:N", title="Ticker"),
         )
         .properties(width=width, height=upper_height)
@@ -221,7 +259,8 @@ def multiple_company(
     # time chart selector
     time_chart = (
         base_chart.add_params(time_brush)
-        .encode(alt.X(f"{date_col}:T"))
+        .encode(alt.X(f"{date_col}:T"),
+                alt.Tooltip([f"{date_col}", f"{ticker_col}", f"{price_col}"]))
         .properties(width=width, height=lower_height)
     )
 
@@ -266,7 +305,8 @@ def aggregate_company(
     )
 
     stock_chart = base_chart.encode(
-        alt.X(f"{date_col}:T", scale=alt.Scale(domain=time_brush), title="Date")
+        alt.X(f"{date_col}:T", scale=alt.Scale(domain=time_brush), title="Date"),
+        alt.Tooltip([f"{date_col}", f"{aggregate_func}({price_col}):Q"]),
     ).properties(width=width, height=upper_height)
 
     # time chart selector
