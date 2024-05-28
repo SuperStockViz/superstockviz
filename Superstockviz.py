@@ -41,7 +41,7 @@ if "stock_df" not in st.session_state:
     )
     stock_data["Date"] = pd.to_datetime(stock_data["Date"], format="%Y-%m-%d").dt.date
 
-    stock_data["median"] = (stock_data["Open"]+stock_data["Close"])/2
+    stock_data["median"] = (stock_data["Open"] + stock_data["Close"]) / 2
 
     news_data = pd.read_csv("./data/top_news.csv", index_col=0)
     news_data["Date"] = pd.to_datetime(news_data["Date"], format="%Y-%m-%d").dt.date
@@ -56,6 +56,32 @@ st.header("Welcome to SuperStockViz!")
 
 
 st.header("Adaptive Stock Viewer")
+
+st.markdown(
+    """
+    Examine stock trends from the past 10 years for any stocks of interest in the SP500! 
+    Choose which stocks you are interested in by their ticker (click 'See More Information on Companies'
+    to get more information about all the companies included in the SP500, and their tickers). 
+
+    Then choose which dates in the last 10 years you are interested in and SuperStockViz will
+    generate a chart showing how those stocks performed.Depending on how many stocks you
+    choose, the chart will either aggregate the stock price, or give you more information
+    about the stock price changes. If many companies are selected, the chart will aggregate the 
+    stock price. For a smaller number of companies the chart will show changes in the closing stock
+    price over time for all the selected companies. If a single stock is selected, the chart
+    will instead show a candlestick plot. In a candlestick plot the color shows whether the stock 
+    price fell on a particular day, while the thin line shows the high and low prices, and the
+    thicker line shows the opening and closing prices.   
+      
+    You can also choose to filter the companies shown by which GICS industry they are in (you 
+    can find which companies are in which industry in the company information drop down). 
+
+      
+    In addition to showing the stock price, if less than 5 companies are selected, news annotations will be 
+    included. For each stock, the top 10 news stories in every year will be shown, with the title and publisher
+    shown in the tooltip. 
+    """
+)
 
 # Input Form
 ticker_list = st.multiselect("Enter tickers of interest", possible_tickers)
@@ -95,6 +121,13 @@ if industry_filter == "All":
 else:
     industry_filter = [industry_filter]
 
+st.write("""
+    Filter by Sector: In order to see more than one sector in the drop-down menu, select at least two 
+    companies in different industries. Please see “See More Information on Companies” to see what ticker 
+    belongs to which sector and more.
+""")
+
+
 # Display Altair Chart
 if len(ticker_list) > 0:
     stock_df = stock_data[(stock_data["Date"] >= start) & (stock_data["Date"] <= end)][
@@ -121,6 +154,12 @@ if len(ticker_list) > 0:
 
 
 st.header("Annotated Stock Price Data")
+
+st.markdown(
+    """ 
+    Below is a selection of annotated stock charts showing major buisiness events and their impact on stock price.
+    """
+)
 
 annotated_ticker = st.selectbox(
     "Select a Ticker of Interest", [x.split(".")[0] for x in annotated_tickers]

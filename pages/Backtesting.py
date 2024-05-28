@@ -11,6 +11,20 @@ import sviz
 
 # Title
 st.write('# Backtesting')
+st.markdown(
+    """
+    Test out how your investments would have done with past data! Choose a number of stocks to 
+    invest, and the table will update allowing you to enter information for those different 
+    stocks. Choose companies to invest in by ticker (information on different companies can be found
+    by clicking on the 'See More Information on Companies'), then choose an amount and when you would like to 
+    buy and sell the stock. Finally click submit and see how well your stock choices would have done!
+    You can even choose to adjust the total gains for inflation by clicking the checkbox to 
+    'Adjust for Inflation'.  
+
+    The generated chart includes tooltips so you can see specific prices on different dates, and 
+    by you can examine different date ranges by selecting them on the bottom chart.  
+    """
+)
 
 # Create empty dataframe to hold form input
 if 'data' not in st.session_state:
@@ -33,7 +47,7 @@ if 'stock_df' not in st.session_state:
 num_rows = st.slider('Number of Stocks', min_value=1, max_value=10)
 
 # a selection for user to specify if value should be inflation adjusted
-# adjust_inflation = st.checkbox("Adjust for Inflation")
+adjust_inflation = st.checkbox("Adjust for Inflation")
 
 # columns to lay out the inputs
 grid = st.columns(4)
@@ -85,8 +99,9 @@ if len(st.session_state.data) > 0:
     gains_chart = sviz.backtest(stock_choice=st.session_state.data, 
                               stock_df=stock_df, 
                               width=650,
-                              upper_height=400, 
+                              upper_height=300, 
                               lower_height=150,
+                              adjust_inflation = adjust_inflation,
                               price="Close")
     st.altair_chart(gains_chart)
 
