@@ -48,16 +48,16 @@ def backtest(
     )
     total_gains["Total"] = total_gains.sum(axis=1)
 
-    total_gains = total_gains.reset_index(names="date")
+    total_gains = total_gains.reset_index(names="Date")
 
     total_gains = pd.melt(
-        total_gains, id_vars="date", var_name="ticker", value_name="gains"
+        total_gains, id_vars="Date", var_name="ticker", value_name="gains"
     )
 
     if adjust_inflation:
-        total_gains["gains"] = inflate_df(total_gains, "date", "gains")
+        total_gains["gains"] = inflate_df(total_gains, "Date", "gains")
     # Find the total gained
-    total_gain = total_gains[total_gains["ticker"]=="Total"]["gains"].iloc[-1]
+    total_gain = total_gains[total_gains["ticker"] == "Total"]["gains"].iloc[-1]
 
     time_brush = alt.selection_interval(encodings=["x"])
 
@@ -69,9 +69,10 @@ def backtest(
         alt.Chart(total_gains, title=title)
         .mark_line()
         .encode(
-            alt.X("date:T", scale=alt.Scale(domain=time_brush), title="Date"),
+            alt.X("Date:T", scale=alt.Scale(domain=time_brush), title="Date"),
             alt.Y("gains:Q", title="Gains (USD)"),
             alt.Color("ticker:N", title="Ticker"),
+            alt.Tooltip(["Date", "ticker", "gains"]),
         )
         .properties(width=width, height=upper_height)
     )
@@ -81,9 +82,10 @@ def backtest(
         .mark_line()
         .add_params(time_brush)
         .encode(
-            alt.X("date:T"),
+            alt.X("Date:T"),
             alt.Y("gains:Q", title="Gains (USD)"),
             alt.Color("ticker:N", title="Ticker"),
+            alt.Tooltip(["Date", "ticker", "gains"]),
         )
         .properties(width=width, height=lower_height)
     )
