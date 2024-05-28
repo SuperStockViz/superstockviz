@@ -28,8 +28,8 @@ def stock_chart(
     close_col: str = "Close",
     high_col: str = "High",
     low_col: str = "Low",
-    aggregate_func: str = "mean"
-)-> alt.Chart:
+    aggregate_func: str = "mean",
+) -> alt.Chart:
     if len(tickers) == 1:
         ticker = tickers[0]
         if ticker == "SP500" or ticker == "FULL":
@@ -69,7 +69,7 @@ def stock_chart(
         lower_height=lower_height,
         date_col=date_col,
         price_col=price_col,
-        aggregate_func=aggregate_func
+        aggregate_func=aggregate_func,
     )
 
 
@@ -136,6 +136,20 @@ def candlestick(
 
     bar = base.mark_bar().encode(alt.Y("Open:Q").scale(zero=False), alt.Y2("Close:Q"))
 
+    news_point = (
+        alt.Chart(stock_data)
+        .mark_circle(color="blue")
+        .encode(
+            alt.X(f"{date_col}:T", scale=alt.Scale(domain=time_brush))
+            .axis(format="%Y-%m-%d")
+            .title("Date"),
+            alt.Y("median:Q").scale(zero=False),
+            alt.Tooltip(["Date", "ticker", "title", "publisher"]),
+        )
+        .properties(width=width, height=upper_height)
+        .transform_filter("datum.title !== null")
+    )
+
     # Full year selector
     full_year = (
         alt.Chart(stock_data)
@@ -145,7 +159,7 @@ def candlestick(
         .properties(width=width, height=lower_height)
     )
 
-    return alt.vconcat(rule + bar, full_year)
+    return alt.vconcat(rule + bar + news_point, full_year)
 
 
 def multiple_company(
@@ -189,6 +203,21 @@ def multiple_company(
         alt.X(f"{date_col}:T", scale=alt.Scale(domain=time_brush), title="Date")
     ).properties(width=width, height=upper_height)
 
+    news_point = (
+        alt.Chart(stock_data)
+        .mark_circle(size=100)
+        .encode(
+            alt.X(f"{date_col}:T", scale=alt.Scale(domain=time_brush))
+            .axis(format="%Y-%m-%d")
+            .title("Date"),
+            alt.Y(f"{price_col}:Q", title="Price"),
+            alt.Tooltip(["Date", "ticker", "title", "publisher"]),
+            alt.Color(f"{ticker_col}:N", title="Ticker"),
+        )
+        .properties(width=width, height=upper_height)
+        .transform_filter("datum.title !== null")
+    )
+
     # time chart selector
     time_chart = (
         base_chart.add_params(time_brush)
@@ -196,7 +225,7 @@ def multiple_company(
         .properties(width=width, height=lower_height)
     )
 
-    return alt.vconcat(stock_chart, time_chart)
+    return alt.vconcat(stock_chart + news_point, time_chart)
 
 
 def aggregate_company(

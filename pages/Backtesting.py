@@ -62,11 +62,10 @@ def add_row(row):
                       key = f"end_date{row}", 
                       format="MM/DD/YYYY")
 
-# Loop to create rows of input widgets
 for r in range(num_rows):
     add_row(r)
 
-def add_dfForm():
+def read_form():
     data = pd.DataFrame({'ticker':[],'invest_amount':[],'start_date':[],'end_date':[]})
     st.session_state.data = data
     for row in range(num_rows):
@@ -76,7 +75,7 @@ def add_dfForm():
                 'end_date':[st.session_state[f'end_date{row}']]})
         st.session_state.data = pd.concat([st.session_state.data, r])
 
-st.button('Submit', on_click=add_dfForm)
+st.button('Submit', on_click=read_form)
 
 with st.expander("See More Information on Companies"):
     st.dataframe(sp500info_df.rename({"Symbol":"Ticker"}, axis=1))
