@@ -33,7 +33,7 @@ if 'stock_df' not in st.session_state:
 num_rows = st.slider('Number of Stocks', min_value=1, max_value=10)
 
 # a selection for user to specify if value should be inflation adjusted
-adjust_inflation = st.checkbox("Adjust for Inflation")
+# adjust_inflation = st.checkbox("Adjust for Inflation")
 
 # columns to lay out the inputs
 grid = st.columns(4)
@@ -87,8 +87,7 @@ if len(st.session_state.data) > 0:
                               width=650,
                               upper_height=400, 
                               lower_height=150,
-                              price="Close",
-                              adjust_inflation=adjust_inflation)
+                              price="Close")
     st.altair_chart(gains_chart)
 
 st.markdown(
