@@ -90,3 +90,14 @@ if len(st.session_state.data) > 0:
                               price="Close",
                               adjust_inflation=adjust_inflation)
     st.altair_chart(gains_chart)
+
+st.markdown(
+    """
+    ## Data Sources:  
+    [Yahoo Finance](https://finance.yahoo.com): Stock prices  
+    [yfinance](https://pypi.org/project/yfinance/): Used to get stock price data from Yahoo Finanace  
+    [CPI](https://palewi.re/docs/cpi/): Inflation adjustment  
+    [Wikipedia](https://en.wikipedia.org/wiki/List_of_S%26P_500_companies): Information on SP500 companies  
+    [GNews](https://github.com/ranahaani/GNews): Used to get news stories from Google News
+    """
+)
