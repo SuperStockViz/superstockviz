@@ -4,7 +4,6 @@ from __future__ import annotations
 
 # External Imports
 import altair as alt
-import cpi
 import pandas as pd
 
 # Local Imports
@@ -19,7 +18,7 @@ def backtest(
     width: int | float = 650,
     upper_height: int | float = 650,
     lower_height: int | float = 100,
-    adjust_inflation:bool=False,
+    #adjust_inflation:bool=False,
     price: str = "Close",
 ) -> alt.Chart:
     price_df = stock_df[price]
@@ -54,8 +53,8 @@ def backtest(
         total_gains, id_vars="Date", var_name="ticker", value_name="gains"
     )
 
-    if adjust_inflation:
-        total_gains["gains"] = inflate_df(total_gains, "Date", "gains")
+    # if adjust_inflation:
+    #     total_gains["gains"] = inflate_df(total_gains, "Date", "gains")
     # Find the total gained
     total_gain = total_gains[total_gains["ticker"] == "Total"]["gains"].iloc[-1]
 
@@ -93,18 +92,18 @@ def backtest(
     return alt.vconcat(gains_chart, time_chart)
 
 
-def inflate_df(df: pd.DataFrame, date_col: str, value_col: str, **kwargs) -> pd.Series:
-    """Adjust a column in a dataframe for inflation
+# def inflate_df(df: pd.DataFrame, date_col: str, value_col: str, **kwargs) -> pd.Series:
+#     """Adjust a column in a dataframe for inflation
 
-    Args:
-        df (pd.DataFrame): Dataframe containing data to adjust
-        date_col (str): Column of DataFrame containing date
-        value_col (str): Column of DataFrame containing value to
+#     Args:
+#         df (pd.DataFrame): Dataframe containing data to adjust
+#         date_col (str): Column of DataFrame containing date
+#         value_col (str): Column of DataFrame containing value to
 
 
-    Returns:
-        pd.Series: Value columns adjusted for inflation
-    """
-    return df.apply(
-        lambda x: cpi.inflate(x[value_col], x[date_col].year, **kwargs), axis=1
-    )
+#     Returns:
+#         pd.Series: Value columns adjusted for inflation
+#     """
+#     return df.apply(
+#         lambda x: cpi.inflate(x[value_col], x[date_col].year, **kwargs), axis=1
+#     )
