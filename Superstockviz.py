@@ -30,20 +30,18 @@ st.markdown(
     to get more information about all the companies included in the SP500, and their tickers). 
 
     Then choose which dates in the last 10 years you are interested in and SuperStockViz will
-    generate a chart showing how those stocks performed.Depending on how many stocks you
-    choose, the chart will either aggregate the stock price, or give you more information
-    about the stock price changes. If many companies are selected, the chart will aggregate the 
-    stock price. For a smaller number of companies the chart will show changes in the closing stock
-    price over time for all the selected companies. If a single stock is selected, the chart
-    will instead show a candlestick plot. In a candlestick plot the color shows whether the stock 
-    price fell on a particular day, while the thin line shows the high and low prices, and the
-    thicker line shows the opening and closing prices.   
+    generate a chart showing how those stocks performed. If several companies are selected the 
+    chart will show changes in the closing stock price over time for all the selected companies. 
+    If a single stock is selected, the chart will instead show a candlestick plot. In a 
+    candlestick plot the color shows whether the stock price fell on a particular day, while 
+    the thin line shows the high and low prices, and the thicker line shows the opening and closing
+    prices.   
       
     You can also choose to filter the companies shown by which GICS industry they are in (you 
     can find which companies are in which industry in the company information drop down). 
 
       
-    In addition to showing the stock price, if less than 5 companies are selected, news annotations will be 
+    In addition to showing the stock price, if less than 10 companies are selected, news annotations will be 
     included. For each stock, the top 10 news stories in every year will be shown, with the title and publisher
     shown in the tooltip. 
     """

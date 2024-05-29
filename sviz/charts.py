@@ -52,7 +52,7 @@ def stock_chart(
             high_col=high_col,
             low_col=low_col,
         )
-    if 2 <= len(tickers) <= 5:
+    if 2 <= len(tickers) <= 10:
         return multiple_company(
             stock_data=stock_data[stock_data[ticker_col].isin(tickers)],
             width=width,
