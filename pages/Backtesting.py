@@ -17,9 +17,7 @@ st.markdown(
     invest, and the table will update allowing you to enter information for those different 
     stocks. Choose companies to invest in by ticker (information on different companies can be found
     by clicking on the 'See More Information on Companies'), then choose an amount and when you would like to 
-    buy and sell the stock. Finally click submit and see how well your stock choices would have done!
-    You can even choose to adjust the total gains for inflation by clicking the checkbox to 
-    'Adjust for Inflation'.  
+    buy and sell the stock. Finally click submit and see how well your stock choices would have done! 
 
     The generated chart includes tooltips so you can see specific prices on different dates, and 
     by you can examine different date ranges by selecting them on the bottom chart.  
