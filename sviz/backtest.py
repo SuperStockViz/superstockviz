@@ -20,24 +20,28 @@ def backtest(
     lower_height: int | float = 100,
     #adjust_inflation:bool=False,
     price: str = "Close",
-) -> alt.Chart:
-    price_df = stock_df[price]
+) -> alt.Chart:   
     ticker_gains_list = []
     if len(stock_choice) == 0:
         return None
+    stock_df = stock_df.sort_values(by="Date")
     for _, row in stock_choice.iterrows():
         ticker = row["ticker"]
-        if ticker not in price_df.columns:
-            continue
-        ticker_series = price_df.loc[
-            (price_df.index >= row["start_date"]) & (price_df.index <= row["end_date"]),
-            ticker,
-        ]
+        # if ticker not in stock_df["ticker"]:
+        #     return None
+        start_date = row["start_date"]
+        end_date = row["end_date"]
+        ticker_df = stock_df.loc[(stock_df["Date"]>=start_date)&
+                                     (stock_df["Date"]<=end_date)&
+                                     (stock_df["ticker"]==ticker), ["Date", price]]
+        ticker_df = ticker_df.set_index("Date")
+        ticker_series = ticker_df[price]
         start_price = ticker_series.iloc[0]
         stock_amount = row["invest_amount"] / start_price
         ticker_series = ticker_series * stock_amount
         ticker_series = ticker_series - ticker_series.iloc[0]
         ticker_series.name = ticker
+        ticker_series = ticker_series[~ticker_series.index.duplicated()]
         ticker_gains_list.append(ticker_series)
     total_gains = (
         pd.concat(ticker_gains_list, axis=1, ignore_index=False, join="outer")

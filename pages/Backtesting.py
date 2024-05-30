@@ -3,11 +3,15 @@
 from datetime import date
 
 # External Imports
+import ibis
 import pandas as pd
 import streamlit as st
 
 # Local Imports
 import sviz
+
+# Page config
+st.set_page_config(layout="wide")
 
 # Title
 st.write('# Backtesting')
@@ -29,15 +33,20 @@ if 'data' not in st.session_state:
     data = pd.DataFrame({'ticker':[],'invest_amount':[],'start_date':[],'end_date':[]})
     st.session_state.data = data
 
-if 'stock_df' not in st.session_state:
-    stock_df = pd.read_csv("./data/stockprice.csv", header=[0,1], index_col=0)
-    possible_tickers = stock_df["Close"].columns
-    stock_df.index = pd.to_datetime(stock_df.index, format = "%Y-%m-%d").date
+# Connect to motherduck database, and cache the connection
+@st.cache_resource
+def get_database_connection():
+    md_token = st.secrets["MOTHERDUCK_TOKEN"]
+    return ibis.duckdb.connect(f"md:?motherduck_token={md_token}")
+
+stock_prices = get_database_connection().table("stock_prices")
+
+if 'sp500info_df' not in st.session_state:
     sp500info_df = pd.read_csv("./data/sp500info.csv", index_col=0)
+    possible_tickers = sp500info_df["Symbol"].sort_values(ascending=True)
 
-
-# Show Dataframe (For testing)
-# st.dataframe(st.session_state.data)
+if 'form_submitted' not in st.session_state:
+    st.session_state.form_submitted = False
 
 
 
@@ -86,6 +95,8 @@ def read_form():
                 'start_date':[st.session_state[f"start_date{row}"]],
                 'end_date':[st.session_state[f'end_date{row}']]})
         st.session_state.data = pd.concat([st.session_state.data, r])
+    st.session_state.form_submitted = True
+    
 
 st.button('Submit', on_click=read_form)
 
@@ -93,7 +104,22 @@ with st.expander("See More Information on Companies"):
     st.dataframe(sp500info_df.rename({"Symbol":"Ticker"}, axis=1))
 
 
-if len(st.session_state.data) > 0:
+def display_backtest_chart(container):
+    if len(st.session_state.data)<1:
+        return None
+    t = st.session_state.data["ticker"].iloc[0]
+    start_date = st.session_state.data["start_date"].iloc[0]
+    end_date = st.session_state.data["end_date"].iloc[0]
+    selection = (stock_prices.ticker==t)&(stock_prices.Date>=start_date)&(stock_prices.Date<=end_date)
+    for i in range(1, len(st.session_state.data)):
+        t = st.session_state.data.iloc[i]["ticker"]
+        start_date = st.session_state.data.iloc[i]["start_date"]
+        end_date = st.session_state.data.iloc[i]["end_date"]
+        selection = selection | ((stock_prices.ticker==t)&
+                                 (stock_prices.Date>=start_date)&
+                                 (stock_prices.Date<=end_date))
+    stock_df = stock_prices.filter(selection).to_pandas()
+    stock_df["Date"] = pd.to_datetime(stock_df["Date"], format="%Y-%m-%d").dt.date
     gains_chart = sviz.backtest(stock_choice=st.session_state.data, 
                               stock_df=stock_df, 
                               width=650,
@@ -101,14 +127,19 @@ if len(st.session_state.data) > 0:
                               lower_height=150,
                               #adjust_inflation = adjust_inflation,
                               price="Close")
-    st.altair_chart(gains_chart)
+    container.altair_chart(gains_chart,use_container_width=True)
+    st.session_state.form_submitted = False
+
+c=st.empty()
+
+if st.session_state.form_submitted:
+    display_backtest_chart(c)
 
 st.markdown(
     """
     ## Data Sources:  
     [Yahoo Finance](https://finance.yahoo.com): Stock prices  
     [yfinance](https://pypi.org/project/yfinance/): Used to get stock price data from Yahoo Finanace  
-    [CPI](https://palewi.re/docs/cpi/): Inflation adjustment  
     [Wikipedia](https://en.wikipedia.org/wiki/List_of_S%26P_500_companies): Information on SP500 companies  
     [GNews](https://github.com/ranahaani/GNews): Used to get news stories from Google News  
     """

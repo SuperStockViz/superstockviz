@@ -5,6 +5,7 @@ import datetime
 import os
 
 # External Imports
+import ibis
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -47,36 +48,24 @@ st.markdown(
     """
 )
 
+
+# Connect to motherduck database, and cache the connection
+@st.cache_resource
+def get_database_connection():
+    md_token = st.secrets["MOTHERDUCK_TOKEN"]
+    return ibis.duckdb.connect(f"md:?motherduck_token={md_token}")
+
+stock_prices = get_database_connection().table("stock_prices")
+
+
+
 # Read in stock data if not already read in
-if "stock_df" not in st.session_state:
-    stock_df = pd.read_csv("./data/stockprice.csv", header=[0, 1], index_col=0)
-    possible_tickers = stock_df["Close"].columns
+if "sp500info_df" not in st.session_state:
     sp500info_df = pd.read_csv("./data/sp500info.csv", index_col=0)
+    possible_tickers = sp500info_df["Symbol"].sort_values(ascending=True)
 
-    # Process data
-    stock_df_list = []
-
-    for attr in np.unique(stock_df.columns.get_level_values(0)):
-        stock_df_list.append(
-            stock_df[attr]
-            .reset_index()
-            .melt(id_vars=["Date"], var_name="ticker", value_name=attr)
-            .set_index(["Date", "ticker"])
-        )
-
-    stock_data = (
-        pd.concat(stock_df_list, axis=1)
-        .reset_index()
-        .merge(sp500info_df, how="inner", left_on="ticker", right_on="Symbol")
-    )
-    stock_data["Date"] = pd.to_datetime(stock_data["Date"], format="%Y-%m-%d").dt.date
-
-    stock_data["median"] = (stock_data["Open"] + stock_data["Close"]) / 2
-
-    news_data = pd.read_csv("./data/top_news.csv", index_col=0)
-    news_data["Date"] = pd.to_datetime(news_data["Date"], format="%Y-%m-%d").dt.date
-
-    stock_data = stock_data.merge(news_data, on=["Date", "ticker"], how="left")
+if "form_submitted" not in st.session_state:
+    st.session_state.form_submitted = False
 
 # Determine which annotations are available
 annotated_tickers = [x.split(".")[0] for x in os.listdir("./data/news_annotated")]
@@ -89,13 +78,10 @@ with st.expander("See More Information on Companies"):
     st.dataframe(sp500info_df.rename({"Symbol": "Ticker"}, axis=1))
 
 
-if len(ticker_list) == 1 and ticker_list[0] == "SP500":
-    industries = list(np.unique(stock_data["GICS Sector"]))
-else:
-    industries = list(
-        np.unique(stock_data[stock_data["ticker"].isin(ticker_list)]["GICS Sector"])
-    )
-industries.sort()
+
+industries = list(np.unique(
+    sp500info_df[sp500info_df["Symbol"].isin(ticker_list)]["GICS Sector"].sort_values(
+        ascending=True)))
 industry_options = ["All"] + industries
 
 # Date Filter
@@ -127,13 +113,20 @@ st.write("""
     belongs to which sector and more.
 """)
 
+def submit_button_clicked():
+    st.session_state.form_submitted = True
 
-# Display Altair Chart
-if len(ticker_list) > 0:
-    stock_df = stock_data[(stock_data["Date"] >= start) & (stock_data["Date"] <= end)][
-        stock_data["GICS Sector"].isin(industry_filter)
-    ]
-    st.altair_chart(
+st.button("Submit", on_click=submit_button_clicked)
+
+def display_apaptive_chart(container):
+    if len(ticker_list)==0:
+        return None
+    stock_df = stock_prices.filter((stock_prices.ticker.isin(ticker_list)) & 
+                                   (stock_prices.Date <= end) & 
+                                   (stock_prices.Date >=start) &
+                                   (stock_prices["GICS Sector"].isin(industry_filter))).to_pandas()
+    stock_df["Date"] = pd.to_datetime(stock_df["Date"], format="%Y-%m-%d")
+    container.altair_chart(
         sviz.stock_chart(
             stock_data=stock_df,
             tickers=ticker_list,
@@ -151,6 +144,13 @@ if len(ticker_list) > 0:
         ),
         use_container_width=True,
     )
+    st.session_state.form_submitted = False
+
+c=st.empty()
+
+if st.session_state.form_submitted:
+    display_apaptive_chart(c)
+
 
 
 st.header("Annotated Stock Price Data")
@@ -174,7 +174,6 @@ st.markdown(
     ## Data Sources:  
     [Yahoo Finance](https://finance.yahoo.com): Stock prices  
     [yfinance](https://pypi.org/project/yfinance/): Used to get stock price data from Yahoo Finanace  
-    [CPI](https://palewi.re/docs/cpi/): Inflation adjustment  
     [Wikipedia](https://en.wikipedia.org/wiki/List_of_S%26P_500_companies): Information on SP500 companies  
     [GNews](https://github.com/ranahaani/GNews): Used to get news stories from Google News
     """
